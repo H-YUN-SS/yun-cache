@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <ctime>
+#include <climits>
 
 struct  CacheNode
 {
