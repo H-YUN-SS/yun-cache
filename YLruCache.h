@@ -66,7 +66,7 @@ namespace YCache
             void evictLeastRecent();  
 
             int capacity_;
-            NodeMap NodeMap_ ;
+            NodeMap nodeMap_;
             std::mutex mutex_;
             NodePtr dummyHead_;
             NodePtr dummyTail_;
@@ -90,28 +90,30 @@ namespace YCache
         prevNode->next_=node->next_;
         node->next_->prev_=prevNode;
         node->next_=nullptr;
+        node->prev_.reset();
     }
     template<typename Key,typename Value>
     void YLruCache<Key,Value>::evictLeastRecent()
     {
-        NodePtr oldstNode=dummyHead_->next_;
-        if(oldstNode==dummyTail_)
+        NodePtr oldestNode=dummyHead_->next_;
+        if(oldestNode==dummyTail_)
         {
             return;
         }
-        removeNode(oldstNode);
-        NodeMap_.(oldstNode->getKey());
+        removeNode(oldsoldestNodetNode);
+        NodeMap_.erase(oldestNode->getKey());
     }
     template<typename Key,typename Value>
     void YLruCache<Key,Value>::insertNode(NodePtr node)
     {
-        node->prev_=dummpyTail->prev_;
-        node->next_=dummpyTail_;
-        if(!dummyTail_->prev_.expired())
-        {
-            dummyTail_->prev_.lock()->next_=node;
-            dummyTail_->prev_=node;
-        }
+        if (!node || !dummyTail_) return;
+            node->prev_ = dummyTail_->prev_;
+            node->next_ = dummyTail_;
+
+            auto prev_node = dummyTail_->prev_.lock();
+            prev_node->next_ = node;
+
+            dummyTail_->prev_ = node;
     }
 
     template<typename Key,typename Value>
@@ -130,21 +132,21 @@ namespace YCache
             return ;
         }
         std::lock_guard<std::mutex> lock(mutex_);
-        auto it=NodeMap_ .find(key);
-        if(it!=NodeMap_ .end())
+        auto it=nodeMap_.find(key);
+        if(it!=nodeMap_.end())
         {
             it->second->setValue(value);
             moveToMostRecent(it->second);
             return;
         }
-        if(NodeMap_ .size()>=capacity_)
+        if(nodeMap_.size()>=capacity_)
         {
             evictLeastRecent();
         }
 
         NodePtr newNode = std::make_shared<LruNodeType>(key, value);
         insertNode(newNode);
-        NodeMap_ [key] = newNode;
+        nodeMap_[key] = newNode;
 
 
     }
