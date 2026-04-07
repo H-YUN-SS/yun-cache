@@ -5,7 +5,7 @@ namespace YCache
     class YICachePolicy
     {
         public:
-        virtual ~YICachePolicy(){};
+        virtual ~YICachePolicy()=default;
 
         virtual void put(Key key,Value value)=0;
         virtual bool get(Key key,Value& value)=0;
