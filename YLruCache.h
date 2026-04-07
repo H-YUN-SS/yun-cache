@@ -27,7 +27,7 @@ namespace YCache
         {}
         Key getKey()const{return key_;}
         Value getValue()const{return value_;}
-        void setValue(const ValueO& value){value_=value;}
+        void setValue(const Value& value){value_=value;}
         size_t getAccessCount()const{return accessCount_;}
         void incrementAccessCount(){accessCount_++;}
         template<typename K,typename V>
@@ -47,18 +47,129 @@ namespace YCache
             explicit YLruCache(int capacity)
             :capacity_(capacity)
             {
-                initalizeList();
+                initializeList();
             }
 
             ~YLruCache()override=default;
 
+            void put(Key key,Value value) override;
+            bool get(Key key,Value& value) override;
+            Value get(Key key) override;
+
         private:
             void initializeList();
+            //把一个节点，移动到链表最末尾 = 标记为 “最近刚用过”
+            void moveToMostRecent(NodePtr node);
+
+            void insertNode(NodePtr node);       
+            void removeNode(NodePtr node);     
+            void evictLeastRecent();  
 
             int capacity_;
-            NodeMap nodoeMap_;
+            NodeMap NodeMap_ ;
             std::mutex mutex_;
             NodePtr dummyHead_;
             NodePtr dummyTail_;
     };
+    template<typename Key,typename Value>
+    void  YLruCache<Key,Value>::initializeList()
+    {
+        dummyHead_=std::make_shared<LruNodeType>(Key(),Value());
+        dummyTail_=std::make_shared<LruNodeType>(Key(),Value());
+        dummyHead_->next_=dummyTail_;
+        dummyTail_->prev_=dummyHead_;
+    }
+    template<typename Key,typename Value>
+    void YLruCache<Key,Value>::removeNode(NodePtr node)
+    {
+        if(node->prev_.expired()||!node->next_)
+        {
+            return;
+        }
+        auto prevNode=node->prev_.lock();
+        prevNode->next_=node->next_;
+        node->next_->prev_=prevNode;
+        node->next_=nullptr;
+    }
+    template<typename Key,typename Value>
+    void YLruCache<Key,Value>::evictLeastRecent()
+    {
+        NodePtr oldstNode=dummyHead_->next_;
+        if(oldstNode==dummyTail_)
+        {
+            return;
+        }
+        removeNode(oldstNode);
+        NodeMap_.(oldstNode->getKey());
+    }
+    template<typename Key,typename Value>
+    void YLruCache<Key,Value>::insertNode(NodePtr node)
+    {
+        node->prev_=dummpyTail->prev_;
+        node->next_=dummpyTail_;
+        if(!dummyTail_->prev_.expired())
+        {
+            dummyTail_->prev_.lock()->next_=node;
+            dummyTail_->prev_=node;
+        }
+    }
+
+    template<typename Key,typename Value>
+    void YLruCache<Key,Value>::moveToMostRecent(NodePtr node)
+    {
+        removeNode(node);
+        insertNode(node);
+    }
+    
+    
+    template<typename Key,typename Value>
+    void YLruCache<Key,Value>::put(Key key,Value value)
+    {
+        if(capacity_<=0)
+        {
+            return ;
+        }
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto it=NodeMap_ .find(key);
+        if(it!=NodeMap_ .end())
+        {
+            it->second->setValue(value);
+            moveToMostRecent(it->second);
+            return;
+        }
+        if(NodeMap_ .size()>=capacity_)
+        {
+            evictLeastRecent();
+        }
+
+        NodePtr newNode = std::make_shared<LruNodeType>(key, value);
+        insertNode(newNode);
+        NodeMap_ [key] = newNode;
+
+
+    }
+
+    template<typename Key,typename Value>
+    bool YLruCache<Key,Value>::get(Key key,Value& value)
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        auto it = NodeMap_.find(key);
+        if (it == NodeMap_.end()) {
+            return false;
+        }
+
+
+        moveToMostRecent(it->second);
+        value = it->second->getValue();
+        return true;
+    }
+
+    template<typename Key,typename Value>
+    Value YLruCache<Key,Value>::get(Key key)
+    {
+        Value val{};
+        get(key, val);
+        return val;
+    }
 }
