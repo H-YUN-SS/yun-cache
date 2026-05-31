@@ -7,7 +7,8 @@
     #include<unordered_map>
 
     #include"YICachePolicy.h"
-
+    #include <vector>      
+    #include <thread>  
     namespace YCache
     {
         template<typename Key, typename Value> class YLruCache;
