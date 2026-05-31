@@ -16,13 +16,13 @@ struct LfuNode
 };
 
 template <typename Key,typename Value>
-class YILfuCache : public YICachePolicy<Key,Value>
+class YLfuCache : public YICachePolicy<Key,Value>
 {
 public:
     using Node = LfuNode<Key,Value>;
     using NodePtr=std::shared_ptr<Node>;
 
-    explicit YILfuCache(int capacity):capacity_(capacity){}
+    explicit YLfuCache(int capacity):capacity_(capacity){}
 
     void put(Key key,Value value)override
     {
