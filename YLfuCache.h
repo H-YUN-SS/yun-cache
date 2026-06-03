@@ -4,9 +4,9 @@
 #include <mutex>
 #include <memory>
 #include <thread>
-#include<unordered_map>
-#include<vector>
+#include <vector>
 #include <cmath>
+#include <limits>
 #include "YICachePolicy.h"
 namespace YCache
 {
@@ -113,9 +113,15 @@ namespace YCache
         using NodePtr = std::shared_ptr<Node>;
         using NodeMap = std::unordered_map<Key,NodePtr>;
 
-        YLfuCache(int capacity,int maxAverageNum = 1000000):capacity_(capacity),minFreq_(INT8_MAX),maxAverageNum_(maxAverageNum),curAverageNum_(0),curTotalNum_(0)
+        YLfuCache(int capacity,int maxAverageNum = 1000000):capacity_(capacity),minFreq_(std::numeric_limits<int>::max()),maxAverageNum_(maxAverageNum),curAverageNum_(0),curTotalNum_(0)
         {}
-        ~YLfuCache() override = default;
+        ~YLfuCache() override
+        {
+            for(auto& pair : freqToFreqList_)
+            {
+                delete pair.second;
+            }
+        }
 
         //对外接口 存入缓存
         void put(Key key,Value value)override
@@ -414,8 +420,8 @@ namespace YCache
     template<typename Key,typename Value>
     void YLfuCache<Key,Value>::updateMinFreq()
     {
-        //初始化最小值为int8最大值
-        minFreq_ = INT8_MAX;
+        //初始化最小值为int最大值
+        minFreq_ = std::numeric_limits<int>::max();
         //遍历所有频率链表
         for(const auto& pair : freqToFreqList_)
         {
@@ -426,7 +432,7 @@ namespace YCache
             }
         }
         //如果所有链表都为空 最小频率设为1
-        if(minFreq_ == INT8_MAX)
+        if(minFreq_ == std::numeric_limits<int>::max())
         {
             minFreq_ = 1;
         }

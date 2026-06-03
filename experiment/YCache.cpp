@@ -63,7 +63,7 @@ bool YCache::is_expire(const std::string& key)
 void YCache::lru_eliminate()
 {
     std::string delete_key;
-    time_t min_time=INT_MAX;
+    time_t min_time=std::numeric_limits<time_t>::max();
     for(auto& pair:cache_)
     {
         if(pair.second.LRU_time<min_time)

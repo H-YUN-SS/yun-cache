@@ -21,6 +21,7 @@ namespace YCache
 
         public:
         ArcNode():accessCount_(1),next_{}
+        {}
 
         ArcNode(Key key,Value value)
         :key_(key)

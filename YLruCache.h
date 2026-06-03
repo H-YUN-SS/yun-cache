@@ -204,7 +204,7 @@
             ,k_(k)
             {}
 
-            Value get(Key key)
+            Value get(Key key) override
             {
                 Value value{};
                 //先查主缓存
@@ -238,7 +238,7 @@
                 return value;
             }
             //重写put
-            void put(Key key,Value value)
+            void put(Key key,Value value) override
             {
                 Value existingValue{};
                 //查主缓存是否存在

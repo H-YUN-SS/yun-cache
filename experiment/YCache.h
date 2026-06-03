@@ -5,6 +5,7 @@
 #include <string>
 #include <ctime>
 #include <climits>
+#include <limits>
 
 struct  CacheNode
 {
