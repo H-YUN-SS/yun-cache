@@ -15,7 +15,6 @@ yun-cache/
 │   ├── YArcLruPart.h           # ARC 的 LRU 分区 + 幽灵缓存
 │   └── YArcLfuPart.h           # ARC 的 LFU 分区 + 幽灵缓存
 ├── testAllCachePolicy.cpp      # 多场景对比测试
-└── experiment/                 # 早期实验代码
 ```
 
 ## 核心设计
