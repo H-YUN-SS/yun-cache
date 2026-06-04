@@ -84,20 +84,18 @@ namespace YCache
         {
             //标记是否命中幽灵缓存
             bool inGhost = false;
-            //命中 LRU 幽灵缓存
+            //命中 LRU 幽灵缓存 -> 扩大LRU, 缩小LFU
             if(lruPart_->checkGhost(key))
             {
-                //LFU容量-1
-                if(lruPart_->decreaseCapacity())
+                if(lfuPart_->decreaseCapacity())
                 {
-                    lfuPart_->increaseCapacity();
+                    lruPart_->increaseCapacity();
                 }
                 inGhost = true;
             }
-            //命中LFU幽灵缓存
+            //命中LFU幽灵缓存 -> 扩大LFU, 缩小LRU
             else if(lfuPart_->checkGhost(key))
             {
-                //LRU容量-1
                 if(lruPart_->decreaseCapacity())
                 {
                     lfuPart_->increaseCapacity();

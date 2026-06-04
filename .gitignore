@@ -1,0 +1,7 @@
+# Compiled executables
+testAllCachePolicy
+*.o
+*.out
+
+# IDE / editor
+.vscode/

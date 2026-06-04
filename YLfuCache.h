@@ -113,6 +113,9 @@ namespace YCache
         using NodePtr = std::shared_ptr<Node>;
         using NodeMap = std::unordered_map<Key,NodePtr>;
 
+        //int capacity 缓存最大容量
+        //int maxAverageNum 老化周期
+
         YLfuCache(int capacity,int maxAverageNum = 1000000):capacity_(capacity),minFreq_(std::numeric_limits<int>::max()),maxAverageNum_(maxAverageNum),curAverageNum_(0),curTotalNum_(0)
         {}
         ~YLfuCache() override
